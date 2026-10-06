@@ -133,33 +133,41 @@ streamlit run app.py
 
 ## 🐳 Execution Method 2: Docker Containerization Setup
 
-To deploy this application seamlessly in an isolated sandbox environment without configuring python or packages manually on the host system, use Docker.
+To deploy this application seamlessly in an isolated sandbox environment without configuring python or packages manually on the host system, follow these steps:
 
-### 1. Configure Host Database Routing
+### ⚠️ CRITICAL NETWORKING PREREQUISITES (Must configure before running)
 
-Because the application runs inside an isolated container grid, it cannot use `localhost` to connect to a database running on your host machine. Open your local `.env` file and change the `DB_HOST` parameter to match the Docker internal bridge gateway route:
+Because the application inside the Docker container is completely isolated, it treats `localhost` as its own container cell, which will result in database connection crashes. You **MUST** complete these two configurations to connect to your host machine's database successfully:
 
-```text
-DB_HOST=host.docker.internal
-```
+1. **Update `.env` configuration:** Change your environment file configuration to point to Docker's internal networking bridge proxy:
+   ```text
+   DB_HOST=host.docker.internal
+   ```
+   _(Ensure special characters like `#` in your `DB_PASSWORD` are wrapped in single ticks, for example: `DB_PASSWORD='YourPassword#'`)_
+2. **Grant MySQL Host Permissions:** Open your local desktop's **MySQL Command Line Client** and execute the following commands to permit the incoming isolated Docker container traffic to interact with your relational schemas:
+   ```sql
+   CREATE USER 'root'@'%' IDENTIFIED BY 'YourActualPassword';
+   GRANT ALL PRIVILEGES ON retail_shelf_analytics.* TO 'root'@'%';
+   FLUSH PRIVILEGES;
+   ```
 
-### 2. Compile and Build the Container Image
+### 1. Compile and Build the Container Image
 
 Ensure you have Docker Desktop running, open your Windows Command Prompt at the repository root folder, and execute this command to compile the production image:
 
 ```cmd
-docker build -t retail_shelf_hub .
+docker build -t retail_shelf_hub_v2 .
 ```
 
-### 3. Spin Up and Launch the Container Environment
+### 2. Spin Up and Launch the Container Environment
 
 Run this containerization command block to pass your local environment credentials directly into the application thread and expose the system interface:
 
 ```cmd
-docker run -d -p 8501:8501 --env-file .env --name retail_shelf_app retail_shelf_hub
+docker run -d -p 8501:8501 --env-file .env --name retail_shelf_app_v2 retail_shelf_hub_v2
 ```
 
-### 4. Open the Active Application Page View
+### 3. Open the Active Application Page View
 
 Once the image initializes successfully, open your web browser and navigate directly to:
 

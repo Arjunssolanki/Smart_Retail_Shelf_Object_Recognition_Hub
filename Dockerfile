@@ -1,30 +1,32 @@
-# Use the official lightweight Python runtime baseline image
-FROM python:3.11-slim
+# Use an optimized, official slim Python environment runtime
+FROM python:3.12-slim
 
-# Prevent Python from writing pycache files and buffer outputs to keep logs clean
+# Prevent Python from writing pyc files to disk and ensure direct log streaming
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Set the active working directory container pathway
-WORKDIR /app
+# Establish the working directory footprint inside the container instance
+WORKDIR /workspace
 
-# Install system dependencies needed for compiling native packages
+# Install system-level dependencies required for database networking
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the dependency tracker file into the application cache layer
+# Copy over package dependency structures first to leverage caching
 COPY requirements.txt .
 
-# Install all isolated architectural python frameworks at once
+# Install isolated framework dependencies natively inside the environment
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire local project directory tree into the app folder container workspace
+# Copy all remaining architecture code layers into the operational workspace
 COPY . .
 
-# Expose port 8501 to allow incoming web browser traffic to reach Streamlit
+# Expose Streamlit's official web server port boundary
 EXPOSE 8501
 
-# Run the system entrypoint command to launch the web dashboard interface hub
+# Health check rule to guarantee the interface pipeline remains active
+HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
+
+# Master execution instruction launching your web portal dashboard engine
 CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
