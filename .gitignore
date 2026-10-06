@@ -1,0 +1,17 @@
+# Secure Environment Properties
+.env
+
+# Microsoft Word Document Rules
+*.docx
+*.doc
+~$*.docx
+~$*.doc
+
+# Python Local Caches
+__pycache__/
+*.pyc
+
+# Local Data and Large Binaries
+data_images/
+*.pt
+*.pkl
