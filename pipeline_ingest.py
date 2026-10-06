@@ -21,7 +21,10 @@ def run_coordinated_pipeline():
     if not raw_json:
         return
         
-    clean_records = validator.filter_malformed_records(raw_json)
+    # Live Jev AI Agent integration to enrich catalog data dynamically
+    enriched_json = validator.enrich_catalog_with_jev_ai(raw_json)
+    
+    clean_records = validator.filter_malformed_records(enriched_json)
     if not clean_records:
         return
         

@@ -1,6 +1,12 @@
+import os
 import json
+import requests
 
 class ValidationAgent:
+    def __init__(self):
+        self.jev_api_key = os.getenv("JEV_AI_API_KEY")
+        self.jev_url = "https://jev.ai"
+
     def parse_and_validate_json(self, raw_text):
         try:
             return json.loads(raw_text)
@@ -13,6 +19,28 @@ class ValidationAgent:
                 except Exception:
                     return None
             return None
+
+    def enrich_catalog_with_jev_ai(self, detections):
+        if not self.jev_api_key:
+            return detections
+            
+        headers = {
+            "Authorization": f"Bearer {self.jev_api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "records": detections,
+            "context": "Map messy retail text and class IDs to true Indian consumer brands like Amul, Britannia, Haldiram, Lay's, or Tata."
+        }
+        
+        try:
+            response = requests.post(self.jev_url, json=payload, headers=headers, timeout=10)
+            if response.status_code == 200:
+                return response.json().get("enriched_records", detections)
+        except Exception:
+            return detections
+        return detections
 
     def filter_malformed_records(self, detections):
         required_keys = {"class_id", "confidence", "x_center", "y_center", "width", "height"}
