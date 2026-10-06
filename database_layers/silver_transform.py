@@ -93,15 +93,11 @@ def transform_bronze_to_silver():
     
     df_filtered = df_clean.groupby("image_filename", group_keys=False).apply(apply_nms).reset_index(drop=True)
     
-    brand_mapping = {
-        0: {"brand": "Coca-Cola", "category": "Beverages"},
-        1: {"brand": "Pepsi", "category": "Beverages"},
-        2: {"brand": "Lay's", "category": "Snacks"},
-        3: {"brand": "Nestle", "category": "Packaged Goods"}
-    }
+    df_lookup = pd.read_sql("SELECT class_id, brand_name, category FROM product_master_lookup", conn)
     
-    df_filtered["brand_name"] = df_filtered["class_id"].map(lambda x: brand_mapping.get(x, {"brand": "Generic", "category": "Other"})["brand"])
-    df_filtered["category"] = df_filtered["class_id"].map(lambda x: brand_mapping.get(x, {"brand": "Generic", "category": "Other"})["category"])
+    df_merged = pd.merge(df_filtered, df_lookup, on="class_id", how="left")
+    df_merged["brand_name"] = df_merged["brand_name"].fillna("Generic")
+    df_merged["category"] = df_merged["category"].fillna("Other")
     
     insert_query = """
         INSERT INTO silver_shelf_inventory (
@@ -110,7 +106,7 @@ def transform_bronze_to_silver():
         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
     
-    for _, row in df_filtered.iterrows():
+    for _, row in df_merged.iterrows():
         cursor.execute(insert_query, (
             int(row["detection_id"]), row["scan_timestamp"], row["store_id"], row["client_number"],
             row["image_filename"], row["brand_name"], row["category"], float(row["confidence_score"]),
