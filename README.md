@@ -1,6 +1,13 @@
 # Smart Retail Shelf Object Recognition Hub
 
-An automated, event-driven Multi-Agent AI Data Pipeline that converts physical retail shelf images into structured analytical insights using cloud inference vision models, Jev AI semantic layer validation, and a Python-native Streamlit metrics dashboard interface.
+The Smart Retail Shelf Object Recognition Hub is an automated, event-driven multi-agent data engineering pipeline. The project captures raw physical storefront retail shelf images uploaded directly to an AWS cloud environment, processes those assets using top-tier Vision Language Models (VLMs), applies clean structural data quality algorithms, and surfaces active tracking indicators inside a custom analytics web interface dashboard
+
+## Key Business & System Benefits
+
+- **Real-Time Insight Tracking:** Automates product visibility analysis without slow, manual store tracking audits.
+- **Intelligent Multi-Agent Logic:** Splits file perception, context alignment, and structural storage layers between isolated specialized code components.
+- **Star-Schema Query Optimization:** Structures raw image datasets into clean dimension and fact warehouse models, preventing lag inside downstream frontend application tools.
+- **Conversational GenAI Interface:** Hosts an AI-powered Copilot that lets corporate managers ask questions about shelf inventories in pure natural language chat.
 
 ---
 
