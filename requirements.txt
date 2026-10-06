@@ -1,1 +1,7 @@
-
+boto3
+groq
+mysql-connector-python
+pandas
+streamlit
+python-dotenv
+requests

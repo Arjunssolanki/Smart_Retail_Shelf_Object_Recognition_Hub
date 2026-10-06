@@ -1,5 +1,6 @@
 # Secure Environment Properties
 .env
+venv/
 
 # Microsoft Word Document Rules
 *.docx

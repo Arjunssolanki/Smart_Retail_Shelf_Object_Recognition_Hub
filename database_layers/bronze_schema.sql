@@ -1,33 +1,9 @@
-CREATE DATABASE IF NOT EXISTS retail_shelf_analytics;
-
 USE retail_shelf_analytics;
 
-DROP TABLE IF EXISTS bronze_shelf_detections;
+-- Clear old lookup listings to avoid primary key constraints
+TRUNCATE TABLE product_master_lookup;
 
-DROP TABLE IF EXISTS product_master_lookup;
-
-CREATE TABLE product_master_lookup (
-    class_id INT PRIMARY KEY,
-    brand_name VARCHAR(100) NOT NULL,
-    product_name VARCHAR(100) NOT NULL,
-    category VARCHAR(100) NOT NULL,
-    sub_category VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE bronze_shelf_detections (
-    detection_id INT AUTO_INCREMENT PRIMARY KEY,
-    scan_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    store_id VARCHAR(50) NOT NULL,
-    client_number VARCHAR(50) NOT NULL,
-    image_filename VARCHAR(255) NOT NULL,
-    class_id INT NOT NULL,
-    confidence_score DECIMAL(5, 4) NOT NULL,
-    x_center DECIMAL(10, 4) NOT NULL,
-    y_center DECIMAL(10, 4) NOT NULL,
-    bbox_width DECIMAL(10, 4) NOT NULL,
-    bbox_height DECIMAL(10, 4) NOT NULL
-);
-
+-- Seed the new granular product SKU matrix
 INSERT INTO
     product_master_lookup (
         class_id,
@@ -53,47 +29,54 @@ VALUES (
     (
         2,
         'Lay\'s',
-        'Classic Salted Chips',
+        'Classic Salted (Yellow)',
         'Snacks',
         'Potato Chips'
     ),
     (
         3,
-        'Nestle',
-        'Maggi Noodles 70g',
-        'Packaged Goods',
-        'Instant Noodles'
+        'Lay\'s',
+        'American Style Cream & Onion (Green)',
+        'Snacks',
+        'Potato Chips'
     ),
     (
         4,
-        'Britannia',
-        'Good Day Biscuits',
+        'Lay\'s',
+        'Spanish Tomato Tango (Red)',
         'Snacks',
-        'Biscuits'
+        'Potato Chips'
     ),
     (
         5,
+        'Pringles',
+        'Pringles Sour Cream & Onion',
+        'Snacks',
+        'Potato Chips'
+    ),
+    (
+        6,
+        'Pringles',
+        'Pringles Original',
+        'Snacks',
+        'Potato Chips'
+    ),
+    (
+        7,
         'Amul',
         'Pure Milk 1L',
         'Dairy',
         'Fresh Milk'
     ),
     (
-        6,
-        'Haldiram\'s',
-        'Bhujia Sev 150g',
-        'Snacks',
-        'Traditional Namkeen'
-    ),
-    (
-        7,
-        'Tata',
-        'Tata Salt 1kg',
-        'Packaged Goods',
-        'Pantry Staples'
-    ),
-    (
         8,
+        'Britannia',
+        'Good Day Cookies',
+        'Snacks',
+        'Biscuits'
+    ),
+    (
+        9,
         'Jev',
         'Jev AI Smart Token',
         'Packaged Goods',

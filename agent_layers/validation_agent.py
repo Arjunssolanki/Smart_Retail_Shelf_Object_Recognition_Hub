@@ -31,7 +31,7 @@ class ValidationAgent:
         
         payload = {
             "records": detections,
-            "context": "Map messy retail text and class IDs to true Indian consumer brands like Amul, Britannia, Haldiram, Lay's, or Tata."
+            "context": "Validate and map granular retail product variations. Ensure that distinct flavors and variants (like Yellow bags for Lay's Classic Salted vs Green bags for Lay's Cream & Onion vs Red/Green Pringles cans) keep their unique class_ids (2, 3, 4, 5, 6) intact. Prevent the consolidation of distinct items into a single fallback brand label."
         }
         
         try:

@@ -1,7 +1,10 @@
 import os
 import mysql.connector
 import pandas as pd
+import warnings
 from dotenv import load_dotenv
+
+warnings.filterwarnings("ignore", category=UserWarning)
 
 def calculate_iou(boxA, boxB):
     xA = max(boxA[0], boxB[0])
@@ -30,10 +33,10 @@ def apply_nms(df, iou_threshold=0.5):
     boxes = []
     for idx, row in df.iterrows():
         x, y, w, h = row["x_center"], row["y_center"], row["bbox_width"], row["bbox_height"]
-        x1 = x - (w / 2)
-        y1 = y - (h / 2)
-        x2 = x + (w / 2)
-        y2 = y + (h / 2)
+        x1 = float(x) - (float(w) / 2)
+        y1 = float(y) - (float(h) / 2)
+        x2 = float(x) + (float(w) / 2)
+        y2 = float(y) + (float(h) / 2)
         boxes.append([x1, y1, x2, y2])
         
     for i in range(len(boxes)):
@@ -76,12 +79,13 @@ def transform_bronze_to_silver():
         )
     """)
     
-    raw_query = """
-        SELECT detection_id, scan_timestamp, store_id, client_number, 
-               image_filename, class_id, confidence_score, 
-               x_center, y_center, bbox_width, bbox_height 
-        FROM bronze_shelf_detections
-    """
+    cursor.execute("SELECT DISTINCT image_filename FROM bronze_shelf_detections")
+    active_files = [r[0] for r in cursor.fetchall()]
+    
+    for f in active_files:
+        cursor.execute("DELETE FROM silver_shelf_inventory WHERE image_filename = %s", (f,))
+        
+    raw_query = "SELECT * FROM bronze_shelf_detections"
     df_bronze = pd.read_sql(raw_query, conn)
     
     if df_bronze.empty:
@@ -91,7 +95,19 @@ def transform_bronze_to_silver():
         
     df_clean = df_bronze[df_bronze["confidence_score"] >= 0.65].copy()
     
-    df_filtered = df_clean.groupby("image_filename", group_keys=False).apply(apply_nms).reset_index(drop=True)
+    # Process files sequentially to maintain stability across all pandas versions
+    final_filtered_list = []
+    unique_images = df_clean["image_filename"].unique()
+    
+    for img in unique_images:
+        df_img_subset = df_clean[df_clean["image_filename"] == img].copy()
+        df_img_filtered = apply_nms(df_img_subset)
+        final_filtered_list.append(df_img_filtered)
+        
+    if final_filtered_list:
+        df_filtered = pd.concat(final_filtered_list, ignore_index=True)
+    else:
+        df_filtered = pd.DataFrame(columns=df_clean.columns)
     
     df_lookup = pd.read_sql("SELECT class_id, brand_name, category FROM product_master_lookup", conn)
     
