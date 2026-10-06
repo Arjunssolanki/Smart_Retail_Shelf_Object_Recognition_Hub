@@ -31,26 +31,18 @@ class PerceptionAgent:
 
     def run_vision_inference(self, base64_image):
         prompt = """
-        Analyze this retail shelf image. You must differentiate between different product items within the same category by looking closely at text logos, product names, packaging designs, and distinct wrapper colors.
-        
-        Classify each item based on these explicit product rules:
-        - 0: Coca-Cola (Red cans/bottles with white script logotype)
-        - 1: Pepsi (Blue cans/bottles with globe logo)
-        - 2: Lay's Classic Salted (Bright Yellow potato chip bags)
-        - 3: Lay's American Style Cream & Onion (Bright Green potato chip bags)
-        - 4: Lay's Spanish Tomato Tango (Deep Red potato chip bags)
-        - 5: Pringles Sour Cream & Onion (Green cylindrical Pringles tube cans)
-        - 6: Pringles Original (Red cylindrical Pringles tube cans)
-        - 7: Amul Pure Milk (White and blue dairy milk packets)
-        - 8: Britannia Good Day (Round cookie/biscuit packs)
-        - 9: Jev AI Assets (AI items/tokens)
-        
-        For every single product item detected on the shelves, return a clean valid JSON array of objects containing exactly:
-        "class_id", "confidence", "x_center", "y_center", "width", "height".
-        
-        CRITICAL: Inspect every individual row and column shelf facet item by item. Do not bundle different flavored chip bags under the same class_id. Output only the raw JSON array inside brackets, no markdown wrappers, no conversational text.
+        Return a valid JSON array of objects for every product item detected on the shelves.
+        Each object MUST contain exactly:
+        - "detected_brand": The brand name (e.g., 'Lay's', 'Oreo'). If unreadable, use 'Generic'.
+        - "detected_product": The variant/flavor (e.g., 'Classic Salted'). If unknown, use 'Other'.
+        - "confidence": A value between 0.0 and 1.0.
+        - "x_center", "y_center", "width", "height": Bounding box coordinates.
+
+        CRITICAL OUTPUT RULE: Do not output any markdown code blocks, do not include any text before or after the JSON, and do not provide an introduction or thinking logs. Output ONLY the raw '[' and ']' array structure.
         """
+        
         chat_completion = self.groq_client.chat.completions.create(
+            model="qwen/qwen3.8-27b",
             messages=[
                 {
                     "role": "user",
@@ -60,8 +52,7 @@ class PerceptionAgent:
                     ]
                 }
             ],
-            model="qwen/qwen3.8-27b",
             temperature=0.0,
-            max_tokens=800  # Explicitly safely anchor limits to bypass the 1000 OTPM ceiling
+            max_tokens=800
         )
         return chat_completion.choices[0].message.content.strip()

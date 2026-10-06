@@ -37,6 +37,7 @@ def run_coordinated_pipeline():
         
         raw_json = validator.parse_and_validate_json(raw_ai_output)
         if not raw_json:
+            print(f"WARNING: Skipping {file_key} due to structural JSON formatting errors.")
             continue
             
         enriched_json = validator.enrich_catalog_with_jev_ai(raw_json)
@@ -44,7 +45,7 @@ def run_coordinated_pipeline():
         
         if clean_records:
             ingestion.load_to_bronze_layer(file_key, clean_records)
-            print(f"SUCCESS: Logged {len(clean_records)} items from {file_key} to Bronze table.")
+            print(f"SUCCESS: Logged {len(clean_records)} open-vocabulary items from {file_key} to Bronze table.")
             
     cursor.close()
     conn.close()

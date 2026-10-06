@@ -1,13 +1,17 @@
 import subprocess
 import sys
+import os
 
 def execute_stage(script_path):
     print(f"\n========================================================")
     print(f"🚀 RUNNING PIPELINE STAGE: {script_path}")
     print(f"========================================================")
     
+    if not os.path.exists(script_path):
+        print(f"❌ STAGE FILE NOT FOUND: {script_path}")
+        return False
+        
     try:
-        # Run script using the current active virtual environment runtime interpreter
         result = subprocess.run([sys.executable, script_path], check=True, text=True, capture_output=True)
         if result.stdout:
             print(result.stdout.strip())
@@ -22,17 +26,14 @@ def execute_stage(script_path):
 def main():
     print("🏁 INITIALIZING END-TO-END MULTI-AGENT DATA PIPELINE CORE...")
     
-    # Phase 1: Ingest new S3 image drops and run Groq Cloud Vision + Jev AI Validation
     if not execute_stage("pipeline_ingest.py"):
         print("\n⛔ Pipeline halted due to error in Ingestion Stage.")
         return
         
-    # Phase 2: Run Spatial Quality Audit NMS filter deduplication layer (Bronze to Silver)
     if not execute_stage("database_layers/silver_transform.py"):
         print("\n⛔ Pipeline halted due to error in Silver Transformation Stage.")
         return
         
-    # Phase 3: Compile Analytical Star Schema Facts and Dimensions (Silver to Gold)
     if not execute_stage("database_layers/gold_transform.py"):
         print("\n⛔ Pipeline execution incomplete.")
         return

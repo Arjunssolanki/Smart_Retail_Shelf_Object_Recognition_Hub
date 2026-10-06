@@ -1,10 +1,11 @@
 # Smart Retail Shelf Object Recognition Hub
 
-The Smart Retail Shelf Object Recognition Hub is an automated, event-driven multi-agent data engineering pipeline. The project captures raw physical storefront retail shelf images uploaded directly to an AWS cloud environment, processes those assets using top-tier Vision Language Models (VLMs), applies clean structural data quality algorithms, and surfaces active tracking indicators inside a custom analytics web interface dashboard
+The Smart Retail Shelf Object Recognition Hub is an automated, event-driven multi-agent data engineering pipeline. The project captures raw physical storefront retail shelf images uploaded directly to an AWS cloud environment, processes those assets using top-tier Vision Language Models (VLMs) via an **Open-Vocabulary approach**, applies clean structural data quality algorithms, and surfaces active tracking indicators inside a custom analytics web interface dashboard.
 
-## Key Business & System Benefits
+## 🌟 Key Business & System Benefits
 
-- **Real-Time Insight Tracking:** Automates product visibility analysis without slow, manual store tracking audits.d .
+- **Open-Vocabulary Scaling:** Completely eliminates hardcoded category limits. The system dynamically reads real-world brand names and product descriptions straight from package designs on the fly.
+- **Dynamic Dimension Cataloging:** Automatically updates your data warehouse lookup catalogs as brand-new products are discovered on storefront shelves.
 - **Intelligent Multi-Agent Logic:** Splits file perception, context alignment, and structural storage layers between isolated specialized code components.
 - **Star-Schema Query Optimization:** Structures raw image datasets into clean dimension and fact warehouse models, preventing lag inside downstream frontend application tools.
 - **Conversational GenAI Interface:** Hosts an AI-powered Copilot that lets corporate managers ask questions about shelf inventories in pure natural language chat.
@@ -16,31 +17,35 @@ The Smart Retail Shelf Object Recognition Hub is an automated, event-driven mult
 ![Architecture Flow](architecture.jpg)
 
 1. **Ingestion Layer**: Images are dropped into a secure Amazon Web Services (AWS) S3 bucket (`smart-retail-shelf-object-recognition-hub`).
-2. **Perception Agent**: A cloud worker intercepts the event drop, fetches the image array bytes from S3, and calls a fast Vision Language Model (`qwen/qwen3.8-27b`) via the Groq Cloud API to isolate product coordinates.
-3. **Validation & Enrichment Agent**: Passes the raw bounding boxes through the **Jev AI API tool** to dynamically clean input text formatting noise, fix ambiguities, and map numerical IDs to real brands.
+2. **Perception Agent**: A cloud worker intercepts the event drop, fetches the image array bytes from S3, and calls a fast Vision Language Model (`qwen/qwen3.8-27b`) via the Groq Cloud API using a fine-tuned, rate-limit optimized completion window to isolate product bounds.
+3. **Validation & Enrichment Agent**: Passes the raw bounding boxes through custom regex block-repair algorithms and the **Jev AI API tool** to dynamically clean input text formatting noise, repair unclosed JSON streams, and remove typos.
 4. **Data Warehouse Medallion Architecture (MySQL)**:
-   - **Bronze Stage**: Records the raw coordinate array logs directly from the cloud tools.
+   - **Bronze Stage**: Records raw open-text data logs directly from the cloud tools.
    - **Silver Stage**: Applies a custom Non-Maximum Suppression (NMS) spatial filter to deduplicate overlapping box coordinates and filters low-confidence outputs.
-   - **Gold Stage**: Aggregates verified entries into an optimized Star Schema (Fact, Store, Product, and Calendar tables) for instant reporting.
+   - **Gold Stage**: Automatically processes upserts to register new items and aggregates verified entries into an optimized Star Schema (Fact, Store, Product, and Calendar tables) for instant reporting.
 5. **Interactive UI Dashboard**: Streamlit reads your Gold analytical schema layers to draw real-time Share-of-Shelf (SoS) bar charts and exposes a conversational GenAI SQL Copilot enabling users to query the database using plain natural language chat.
 
 ---
 
 ## 📸 System UI & Dashboard Overview
 
-Below are the operational logs and data visualizations tracking your real-time retail assets, processed directly from your cloud storage through the multi-agent warehouse pipelines:
+Below are the updated operational logs and data visualizations tracking your real-time retail assets, processed directly from your cloud storage through the dynamic multi-agent warehouse pipelines:
 
-### 1. Ingestion & Perception Accuracy Pipeline Analytics
+### 1. GenAI Copilot: Conversational Natural Language SQL Chat Interface
 
-![Analytics Webpage Dashboard Overview](streamlit1.png)
+![GenAI Copilot Chat Interface Run](streamlit1.png)
 
-### 2. GenAI Copilot: Conversational Natural Language SQL Chat Interface
+### 2. Ingestion & Perception Accuracy Pipeline Analytics
 
-![GenAI Copilot Chat Interface Run](streamlit3.png)
+![Analytics Webpage Dashboard Overview](streamlit2.png)
 
 ### 3. Granular Operational Warehouse Inventory Logs
 
-![Granular Operational Inventory Logs](streamlit2.png)
+![Granular Operational Inventory Logs](streamlit3.png)
+
+### 4. Direct Database Row Mapping & Pipeline Telemetry
+
+![Direct Database Row Mapping and Pipeline Telemetry](streamlit4.png)
 
 ---
 
@@ -50,23 +55,21 @@ Below are the operational logs and data visualizations tracking your real-time r
 Smart_Retail_Shelf_Object_Recognition_Hub/
 ├── agent_layers/
 │   ├── ingestion_agent.py      # Manages structural transactional MySQL connection pools
-│   ├── perception_agent.py     # Connects to S3 bucket streams and runs Groq vision calls
-│   └── validation_agent.py     # Integrates Jev AI API tool for semantic catalog mapping
+│   ├── perception_agent.py     # Connects to S3 bucket streams and runs Groq open-vocabulary vision calls
+│   └── validation_agent.py     # Resilient regex-based block parser and Jev AI semantic alignment
 ├── database_layers/
-│   ├── bronze_schema.sql       # Initial ingestion lookup schema DDL script
-│   ├── gold_schema.sql         # Fact and Dimension star-schema definitions DDL script
-│   ├── gold_transform.py       # Aggregates clean Silver rows into your Gold schema
+│   ├── schema_setup.sql        # Unified database initialization and table drop DDL script
+│   ├── gold_transform.py       # Open-world upsert system tracking dynamic facts/dimensions
 │   └── silver_transform.py     # Quality Audit agent running spatial NMS deduplication
+├── lambda_function/
+│   └── lambda_handler.py       # Cloud serverless handler synchronized with open-text schemas
 ├── app.py                      # Streamlit interactive application core and GenAI SQL Copilot
 ├── pipeline_ingest.py          # Orchestrates multi-agent ingestion pipeline loops
 ├── run_pipeline.py             # Master automation script running all components sequentially
 ├── requirements.txt            # Isolated project dependency configuration requirements
 ├── Dockerfile                  # Production container recipe configuration parameters
 ├── .dockerignore               # Excludes environment parameters and local caches from image build
-├── .gitignore                  # Prevents environment files and Word documents from tracking
-├── image_DV9tm4.png            # Main analytics dashboard dashboard visualization screenshot
-├── image_HGmrWi.png            # GenAI Copilot SQL execution text box chat screenshot
-└── image_Locd7S.png            # Granular operational inventory table grid screenshot
+└── .gitignore                  # Prevents environment files and Word documents from tracking
 ```
 
 ---
@@ -94,7 +97,6 @@ DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD="your password"
 DB_NAME=retail_shelf_analytics
-DB_HOST=host.docker.internal
 AWS_ACCESS_KEY_ID=YOUR KEY ID
 AWS_SECRET_ACCESS_KEY=YOUR SECRET KEY
 AWS_REGION=ap-south-1
@@ -105,11 +107,10 @@ JEV_AI_API_KEY=YOUR JEV API KEY
 
 ### 3. Initialize the Core Database Warehouse Tables
 
-Execute the target schema definitions inside your active MySQL Command Line Client to initialize the underlying repository environment:
+Execute the consolidated open-world schema definitions inside your active MySQL Command Line Client to initialize the underlying repository environment layout cleanly:
 
 ```cmd
-mysql -u root -p"YOUR PASSWORD" < database_layers/bronze_schema.sql
-mysql -u root -p"YOUR PASSWORD" < database_layers/gold_schema.sql
+mysql -u root -p < database_layers/schema_setup.sql
 ```
 
 ### 4. Execute the Automated Multi-Agent Processing Pipeline
@@ -127,6 +128,8 @@ Spin up the local development web server to run your dashboard charts and open u
 ```cmd
 streamlit run app.py
 ```
+
+---
 
 ## 🐳 Execution Method 2: Docker Containerization Setup
 

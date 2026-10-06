@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import requests
 
 class ValidationAgent:
@@ -8,16 +9,34 @@ class ValidationAgent:
         self.jev_url = "https://jev.ai"
 
     def parse_and_validate_json(self, raw_text):
+        if not raw_text:
+            return None
+        
+        raw_text = raw_text.strip()
+        
+        # Step 1: Direct Parsing Attempt
         try:
             return json.loads(raw_text)
         except Exception:
-            if "[" in raw_text and "]" in raw_text:
-                start = raw_text.find("[")
-                end = raw_text.rfind("]") + 1
-                try:
-                    return json.loads(raw_text[start:end])
-                except Exception:
-                    return None
+            pass
+            
+        # Step 2: Extract bracket contents and automatically fix truncation anomalies
+        try:
+            start_idx = raw_text.find("[")
+            if start_idx == -1:
+                return None
+                
+            array_content = raw_text[start_idx:]
+            
+            # Find the last valid closed object block matching structural syntax boundaries
+            valid_objects = re.findall(r'\{[^{}]*?\}', array_content)
+            if not valid_objects:
+                return None
+                
+            # Reconstruct a clean, closed JSON array structure dynamically
+            reconstructed_json_str = "[" + ",".join(valid_objects) + "]"
+            return json.loads(reconstructed_json_str)
+        except Exception:
             return None
 
     def enrich_catalog_with_jev_ai(self, detections):
@@ -31,7 +50,7 @@ class ValidationAgent:
         
         payload = {
             "records": detections,
-            "context": "Validate and map granular retail product variations. Ensure that distinct flavors and variants (like Yellow bags for Lay's Classic Salted vs Green bags for Lay's Cream & Onion vs Red/Green Pringles cans) keep their unique class_ids (2, 3, 4, 5, 6) intact. Prevent the consolidation of distinct items into a single fallback brand label."
+            "context": "Validate open retail product variables. Strip out formatting noise and return a clean array."
         }
         
         try:
@@ -43,7 +62,7 @@ class ValidationAgent:
         return detections
 
     def filter_malformed_records(self, detections):
-        required_keys = {"class_id", "confidence", "x_center", "y_center", "width", "height"}
+        required_keys = {"detected_brand", "detected_product", "confidence", "x_center", "y_center", "width", "height"}
         valid_records = []
         if not isinstance(detections, list):
             return valid_records
